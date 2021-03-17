@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Jockey Bot</title>
+	<style>
+		#rmbr, #logout, #username {
+			display: none;
+		}
+
+		#login>input,
+		button,
+		#rmbr {
+			margin: 3px;
+			width: 200px;
+			font-size: 15px;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+	</style>
+</head>
+
+<body>
+	<form onsubmit="connect(); return false;" id="login">
+		<input id="email" type="email" placeholder="Email" /><br>
+		<input id="password" type="password" placeholder="Password" /><br>
+		<div id="rmbr">
+			<input type="checkbox" id="remember" checked>
+			<label for="remember">remember me</label><br>
+		</div>
+		<button type="submit">Login</button>
+	</form>
+	<h3 id="username"></h3>
+	<button id="logout" onclick="logout()">Logout</button>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.slim.js"></script>
+<script>
+	var randomString = function (length) {
+		text = "";
+		possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		for (i = 0; i < length; i++) {
+			text += possible.charAt(Math.floor(Math.random() * possible.length));
+		}
+		return text;
+	}
+
+	token = null;
+	sock = null;
+	trainTimeout = null;
+	if (typeof (Storage) !== "undefined") {
+		document.getElementById("rmbr").style.display = "block";
+		token = window.localStorage.getItem("token");
+		if (token !== null) {
+			connect();
+		}
+	}
+
+	function logout() {
+		sock.emit("security logout", {}, (data) => {
+			if (data.code == 200) {
+				document.getElementById("login").style.display = "block";
+				document.getElementById("logout").style.display = "none";
+				window.localStorage.removeItem("token");
+			}
+		});
+	}
+
+	function onLogin() {
+		sock.emit("message private subscribe", { headers: { version: 2 } }, (data) => {
+			if (data.code != 200) { return }
+			sock.emit("message send", { body: { recipient: 80277459, isGroup: false, data: "!jockey show", mimeType: "text/plain" } });
+		});
+	}
+
+	function connect() {
+		if (token === null) {
+			token = randomString(55);
+		}
+		document.getElementById("login").style.display = "none";
+
+		sock = new io(`https://v3.palringo.com:3051/?token=${token}&device=ios`, { transports: ['websocket'] });
+		sock.on("connect", () => {
+			sock.on("welcome", (data) => {
+				if (data.hasOwnProperty("loggedInUser")) {
+					onLogin();
+					let username = document.getElementById("username");
+					username.innerText = data.loggedInUser.nickname;
+					username.style.display = "block";
+					document.getElementById("logout").style.display = "block";
+				} else {
+					let email = document.getElementById("email").value;
+					let password = document.getElementById("password").value;
+
+					sock.emit("security login", { body: { username: email, password: password }, headers: { version: 2 } }, (data) => {
+						if (data.code != 200) {
+							document.getElementById("login").style.display = "none";
+							document.getElementById("logout").style.display = "block";
+							alert("Login failed");
+							//console.log(data);
+							return;
+						}
+						onLogin();
+						//console.log(data);
+						if (document.getElementById("remember").checked) {
+							window.localStorage.setItem("token", token);
+						}
+						let username = document.getElementById("username");
+						username.innerText = data.body.subscriber.nickname;
+						username.style.display = "block";
+						document.getElementById("logout").style.display = "block";
+					});
+				}
+			});
+		});
+
+		sock.on("message send", (data) => {
+			if (data.code != 200) { return }
+			body = data.body;
+			
+			if (body.originator.id == 80277459) {
+				var energy = null;
+
+				mesg = new TextDecoder().decode(body.data);
+
+				if (body.mimeType == "text/plain") {
+					energy = mesg.match(/Energy = (\d+)\%/);
+				} else if (body.mimeType == "text/html") {
+					energy = mesg.match(/energyPercentage">(\d+)\%/);
+				}
+
+				if (energy === null) { return }
+				energy = parseInt(energy[1]);
+
+				clearTimeout(trainTimeout);
+				if (energy >= 100) {
+					sock.emit("message send", { body: { recipient: 80277459, isGroup: false, data: "!jockey train all", mimeType: "text/plain" } });
+				} else {
+					trainTimeout = setTimeout(() => {
+						sock.emit("message send", { body: { recipient: 80277459, isGroup: false, data: "!jockey train all", mimeType: "text/plain" } });
+					}, ((100 - energy) / 2) * 60000);
+				}
+			}
+		});
+
+		sock.on("error", (error) => {
+			console.log(error);
+		});
+	}
+</script>
+
+</html>
