@@ -1,0 +1,299 @@
+/* line 43, ../Flashcards/scss/main.scss */
+* {
+  font-family: "Roboto Flex", "Noto Sans Arabic";
+  box-sizing: border-box;
+}
+
+/* line 48, ../Flashcards/scss/main.scss */
+body {
+  background-color: #f0f0f0;
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* line 56, ../Flashcards/scss/main.scss */
+nav {
+  background-color: white;
+  box-shadow: #091e4240 0px 1px 1px, #091e4221 0px 0px 1px 1px;
+}
+
+/* line 59, ../Flashcards/scss/main.scss */
+nav .x {
+  height: 2.5rem;
+  margin: 5px;
+  margin-bottom: 0;
+  fill: red;
+}
+
+@media only screen and (min-width: 600px) {
+  /* line 68, ../Flashcards/scss/main.scss */
+  .view {
+    margin: 0 auto;
+    width: 30rem;
+  }
+}
+
+/* line 74, ../Flashcards/scss/main.scss */
+.view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px;
+}
+
+/* line 82, ../Flashcards/scss/main.scss */
+#decks {
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: #091e4240 0px 1px 1px, #091e4221 0px 0px 1px 1px;
+  display: flex;
+  flex-direction: column;
+  padding: 0 10px;
+}
+
+/* line 88, ../Flashcards/scss/main.scss */
+#decks .deck {
+  user-select: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-evenly;
+  border-bottom: #091e4240 solid 1px;
+  padding: 10px 0;
+}
+
+/* line 95, ../Flashcards/scss/main.scss */
+#decks .deck:last-of-type {
+  border: none;
+}
+
+/* line 101, ../Flashcards/scss/main.scss */
+#card {
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: #091e4240 0px 1px 1px, #091e4221 0px 0px 1px 1px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  padding: 5rem 0;
+  user-select: none;
+}
+
+/* line 110, ../Flashcards/scss/main.scss */
+#card .front {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+/* line 115, ../Flashcards/scss/main.scss */
+#card .back {
+  font-size: 1.3rem;
+}
+
+/* line 120, ../Flashcards/scss/main.scss */
+#multichoice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media only screen and (min-height: 600px) {
+  /* line 120, ../Flashcards/scss/main.scss */
+  #multichoice {
+    margin: auto 0;
+  }
+}
+
+/* line 129, ../Flashcards/scss/main.scss */
+#multichoice #card {
+  margin-bottom: 50px;
+}
+
+/* line 134, ../Flashcards/scss/main.scss */
+#multichoice #next {
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: #091e4240 0px 1px 1px, #091e4221 0px 0px 1px 1px;
+  user-select: none;
+  cursor: pointer;
+  text-align: center;
+  padding: 1.5rem 0;
+  color: black;
+  transition: all 0.5s;
+}
+
+@media (hover: hover) {
+  /* line 25, ../Flashcards/scss/main.scss */
+  #multichoice #next:hover {
+    background-color: #f2f2f2;
+  }
+}
+
+/* line 30, ../Flashcards/scss/main.scss */
+#multichoice #next:active {
+  background-color: #e6e6e6;
+  transition: none;
+}
+
+/* line 35, ../Flashcards/scss/main.scss */
+#multichoice #next.disabled {
+  cursor: auto;
+  box-shadow: #8c8c8c80 0px 1px 1px, #8c8c8c80 0px 0px 1px 1px;
+  background-color: #dddddd;
+  color: #777777;
+}
+
+/* line 138, ../Flashcards/scss/main.scss */
+#multichoice #choices {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* line 143, ../Flashcards/scss/main.scss */
+#multichoice #choices .option {
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: #091e4240 0px 1px 1px, #091e4221 0px 0px 1px 1px;
+  user-select: none;
+  cursor: pointer;
+  text-align: center;
+  padding: 1.5rem 0;
+  color: black;
+  transition: all 0.5s;
+  padding: 2rem 0;
+}
+
+@media (hover: hover) {
+  /* line 25, ../Flashcards/scss/main.scss */
+  #multichoice #choices .option:hover {
+    background-color: #f2f2f2;
+  }
+}
+
+/* line 30, ../Flashcards/scss/main.scss */
+#multichoice #choices .option:active {
+  background-color: #e6e6e6;
+  transition: none;
+}
+
+/* line 35, ../Flashcards/scss/main.scss */
+#multichoice #choices .option.disabled {
+  cursor: auto;
+  box-shadow: #8c8c8c80 0px 1px 1px, #8c8c8c80 0px 0px 1px 1px;
+  background-color: #dddddd;
+  color: #777777;
+}
+
+/* line 151, ../Flashcards/scss/main.scss */
+#multichoice #choices:not(.answered) .option.selected {
+  box-shadow: #409fbf 0px 1px 1px, #409fbf 0px 0px 1px 1px;
+  background-color: #ccf2ff;
+}
+
+/* line 159, ../Flashcards/scss/main.scss */
+#multichoice #choices.answered .option {
+  cursor: auto;
+}
+
+/* line 161, ../Flashcards/scss/main.scss */
+#multichoice #choices.answered .option.selected {
+  box-shadow: #bf4040 0px 1px 1px, #bf4040 0px 0px 1px 1px;
+  background-color: #f76e6e;
+  color: black;
+}
+
+/* line 166, ../Flashcards/scss/main.scss */
+#multichoice #choices.answered .option.correct {
+  box-shadow: #80bf40 0px 1px 1px, #80bf40 0px 0px 1px 1px;
+  background-color: #b3f76e;
+  color: black;
+}
+
+/* line 176, ../Flashcards/scss/main.scss */
+#grading {
+  display: grid;
+  gap: 10px;
+  margin-top: auto;
+}
+
+/* line 181, ../Flashcards/scss/main.scss */
+#grading .grade {
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: #091e4240 0px 1px 1px, #091e4221 0px 0px 1px 1px;
+  user-select: none;
+  cursor: pointer;
+  text-align: center;
+  padding: 10px 0;
+}
+
+/* line 188, ../Flashcards/scss/main.scss */
+#grading .grade:first-of-type {
+  background-color: #fa9e9e;
+}
+
+/* line 191, ../Flashcards/scss/main.scss */
+#grading .grade:first-of-type:hover {
+  background-color: #f98686;
+}
+
+/* line 194, ../Flashcards/scss/main.scss */
+#grading .grade:first-of-type:active {
+  background-color: #f76e6e;
+}
+
+/* line 198, ../Flashcards/scss/main.scss */
+#grading .grade:nth-of-type(2) {
+  background-color: #facc9e;
+}
+
+/* line 201, ../Flashcards/scss/main.scss */
+#grading .grade:nth-of-type(2):hover {
+  background-color: #f9bf86;
+}
+
+/* line 204, ../Flashcards/scss/main.scss */
+#grading .grade:nth-of-type(2):active {
+  background-color: #f7b36e;
+}
+
+/* line 208, ../Flashcards/scss/main.scss */
+#grading .grade:nth-of-type(3) {
+  background-color: #fafa9e;
+}
+
+/* line 211, ../Flashcards/scss/main.scss */
+#grading .grade:nth-of-type(3):hover {
+  background-color: #f9f986;
+}
+
+/* line 214, ../Flashcards/scss/main.scss */
+#grading .grade:nth-of-type(3):active {
+  background-color: #f7f76e;
+}
+
+/* line 218, ../Flashcards/scss/main.scss */
+#grading .grade:last-of-type {
+  background-color: #ccfa9e;
+}
+
+/* line 221, ../Flashcards/scss/main.scss */
+#grading .grade:last-of-type:hover {
+  background-color: #bff986;
+}
+
+/* line 224, ../Flashcards/scss/main.scss */
+#grading .grade:last-of-type:active {
+  background-color: #b3f76e;
+}
+
+/* line 228, ../Flashcards/scss/main.scss */
+#grading .grade .due {
+  font-size: 0.9rem;
+  color: #3f3f3f;
+}
+
+/*# sourceMappingURL=main.css.map */

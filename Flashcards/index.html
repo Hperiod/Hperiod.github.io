@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Flashcards</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+	<link rel="stylesheet" href="main.css">
+</head>
+
+<body
+	x-data="{decks: {'Arabic': {total: 103}, 'Mandarin': {total: 103}, 'Bahasa': {total: 103}}, gradings: {'Again': 0, 'Almost': 300, 'Good': 86400, 'Good': 86400, 'Great': 259200}, type: 'multi'}">
+
+	<nav>
+		<svg class="x" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+			<path
+				d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z">
+			</path>
+		</svg>
+	</nav>
+
+
+	<!-- Decks View -->
+	<template x-if="false">
+		<div class="view" id="decks-view">
+
+			<div id="decks">
+				<template x-for="(data, name) in decks">
+					<div class="deck">
+						<div x-text="name"></div>
+						<div x-text="data.total"></div>
+					</div>
+				</template>
+			</div>
+		</div>
+	</template>
+
+
+	<!-- Review View -->
+	<template x-if="true">
+		<div class="view" x-data="cards">
+
+			<template x-if="type=='multi'">
+				<div x-data="multichoice(cards, 4)" id="multichoice">
+
+					<div id="card">
+						<span class="front" x-text="question"></span>
+					</div>
+
+					<div id="choices" :class="{'answered': answered}">
+						<template x-for="(choice, index) in choices">
+							<div @click="select(choice)" class="option"
+								:class="{'correct': choice == answer, 'selected': selected === choice, 'disabled': answered}"
+								x-text="choice"></div>
+						</template>
+					</div>
+					<div :class="{'disabled': selected === null}" id="next" @click="solve"
+						x-text="answered ? 'Next' : 'Check'"></div>
+				</div>
+			</template>
+
+			<template x-if="type=='grade'">
+				<div id="grading">
+
+					<div id="card" x-data="{show: false}" @click.once="show = !show">
+						<span class="front">كَانَتْ</span>
+						<span class="back" x-show="show"
+							x-transition:enter.opacity.scale.top.80.duration.500ms>were</span>
+					</div>
+
+					<template x-for="(time, grade) in gradings">
+						<div class="grade">
+							<span class="rating" x-text="grade"></span>
+							<template x-if="time > 0">
+								<span class="due" x-text="`(Due in ${secs2time(time)})`"></span>
+							</template>
+						</div>
+					</template>
+				</div>
+			</template>
+
+
+		</div>
+	</template>
+
+</body>
+<script>
+	function chooseRandom(arr) {
+		return arr[Math.floor(Math.random() * arr.length)]
+	}
+
+	cards = [
+		{ front: 'homme', back: 'man' },
+		{ front: 'fille', back: 'girl' },
+		{ front: 'garcon', back: 'boy' },
+		{ front: 'femme', back: 'woman' },
+		{ front: 'chien', back: 'dog' },
+	];
+
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('multichoice', (cards, numChoices) => ({
+			cards: cards,
+			numChoices: numChoices,
+			solved: [],
+			question: null,
+			answer: null,
+			choices: [],
+			answered: false,
+			selected: null,
+
+			init() {
+				this.next();
+			},
+
+			next() {
+				this.answered = false;
+				this.selected = null;
+				this.choices = [];
+
+				if (this.solved.length === this.cards.length) {
+					console.log('out of cards');
+					return;
+				}
+
+				//choose random card that hasn't been solved already
+				var card = null;
+				while (card === null) {
+					var c = chooseRandom(this.cards);
+					if (!this.solved.includes(c.front)) {
+						card = c;
+					}
+				}
+
+				this.question = card.front;
+				this.answer = card.back;
+
+
+				if (this.cards.length - 1 < this.numChoices) {
+					this.choices = this.cards.map(c => c.back);
+				} else {
+					this.choices.push(card.back);
+					while (this.choices.length < this.numChoices) {
+						var card = chooseRandom(this.cards).back;
+						if (!this.choices.includes(card)) {
+							this.choices.push(card);
+						}
+					}
+				}
+
+				//make sure choices are an even number
+				if (this.choices.length % 2 != 0) {
+					this.choices.pop();
+				}
+
+				//randomize choices
+				this.choices.sort(() => Math.random() - 0.5)
+			},
+
+			select(choice) {
+				if (this.answered) {
+					return
+				}
+				this.selected = choice;
+			},
+
+			solve() {
+				if (this.selected === null) {
+					return;
+				}
+				if (this.answered) {
+					this.next();
+					return
+				}
+				if (this.selected !== this.answer) {
+					navigator.vibrate(100);
+				} else {
+					this.solved.push(this.question);
+				}
+				this.answered = true;
+			}
+		}));
+
+	});
+
+	function secs2time(secs) {
+		if (secs >= 31536000) {
+			let years = Math.floor(secs / 31536000);
+			return years > 1 ? `${years} years` : "1 year";
+		} else if (secs >= 604800) {
+			let weeks = Math.floor(secs / 604800);
+			return weeks > 1 ? `${weeks} weeks` : "1 week";
+		} else if (secs >= 86400) {
+			let days = Math.floor(secs / 86400);
+			return days > 1 ? `${days} days` : "1 day";
+		} else if (secs >= 3600) {
+			let hours = Math.floor(secs / 3600);
+			return hours > 1 ? `${hours} hours}` : "1 hour";
+		} else if (secs >= 60) {
+			let mins = Math.floor(secs / 60);
+			return mins > 1 ? `${mins} mins` : "1 min";
+		} else {
+			return secs > 1 ? `${secs} secs` : "Now";
+		}
+	}
+</script>
+
+</html>
