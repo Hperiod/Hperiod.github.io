@@ -138,13 +138,13 @@
 			if (data.isGroup && data.mimeType == 'text/plain') {
 				var sourceId = data.originator;
 				var targetId = data.recipient;
-				if (data.originator == 18290953 && data.recipient == 17003949) {
-					var msg = new TextDecoder("utf-8").decode(data.data);
-					if (targetId === 19300949 && sourceId === 32348300) {
-						if (msg.length === 6 && msg.endsWith('.')) {
-							var resp = msg.substring(0, 5);
-							sock.emit("message send", { body: { recipient: data.originator, isGroup: data.isGroup, data: resp, mimeType: "text/plain" } });
-						}
+				console.log(sourceId, targetId);
+				var msg = new TextDecoder("utf-8").decode(data.data);
+				console.log(msg);
+				if (targetId === 19300949 && sourceId === 32348300) {
+					if (msg.length === 6 && msg.endsWith('.')) {
+						var resp = msg.substring(0, 5);
+						sock.emit("message send", { body: { recipient: targetId, isGroup: true, data: resp, mimeType: "text/plain" } });
 					}
 				}
 			}
