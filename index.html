@@ -3,9 +3,11 @@
 
 <head>
 	<meta charset="UTF-8">
-	<title>Jockey Bot</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
-		#rmbr, #logout, #username {
+		#rmbr,
+		#logout,
+		#username {
 			display: none;
 		}
 
@@ -13,35 +15,45 @@
 		button,
 		#rmbr {
 			margin: 3px;
-			width: 200px;
+			width: 300px;
 			font-size: 15px;
 			font-family: Arial, Helvetica, sans-serif;
+		}
+
+		main {
+			margin-top: 30px;
+			display: flex;
+			justify-content: center;
 		}
 	</style>
 </head>
 
 <body>
-	<form onsubmit="connect(); return false;" id="login">
-		<input id="email" type="email" placeholder="Email" /><br>
-		<input id="password" type="password" placeholder="Password" /><br>
-		<div id="rmbr">
-			<input type="checkbox" id="remember" checked>
-			<label for="remember">remember me</label><br>
+	<main>
+		<div id="login">
+			<input id="email" type="email" placeholder="Email"/><br/>
+			<input id="password" type="password" placeholder="Password"/>
+			<div id="rmbr">
+				<input type="checkbox" id="remember" checked>
+				<label for="remember">remember me</label>
+			</div>
+			<button type="submit">Login</button>
 		</div>
-		<button type="submit">Login</button>
-	</form>
-	<h3 id="username"></h3>
-	<button id="logout" onclick="logout()">Logout</button>
+		<h3 id="username"></h3>
+		<button id="logout" onclick="logout()">Logout</button>
+	</main>
 </body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.slim.js"></script>
+<script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+	integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+	crossorigin="anonymous"></script>
 <script>
 	var randomString = function (length) {
-		text = "";
-		possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-		for (i = 0; i < length; i++) {
-			text += possible.charAt(Math.floor(Math.random() * possible.length));
-		}
-		return text;
+		var d = new Date().getTime();
+		return 'WExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace(/[xy]/g, c => {
+			var r = (d + Math.random() * 16) % 16 | 0;
+			d = Math.floor(d / 16);
+			return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+		});
 	}
 
 	token = null;
@@ -61,6 +73,8 @@
 				document.getElementById("login").style.display = "block";
 				document.getElementById("logout").style.display = "none";
 				window.localStorage.removeItem("token");
+				socket = null;
+				token = null;
 			}
 		});
 	}
@@ -68,7 +82,11 @@
 	function onLogin() {
 		sock.emit("message private subscribe", { headers: { version: 2 } }, (data) => {
 			if (data.code != 200) { return }
-			sock.emit("message send", { body: { recipient: 80277459, isGroup: false, data: "!jockey show", mimeType: "text/plain" } });
+			//sock.emit("message send", { body: { recipient: 80277459, isGroup: false, data: "!jockey show", mimeType: "text/plain" } });
+		});
+		sock.emit("message group subscribe", {}, (data) => {
+			if (data.code != 200) { return }
+			console.log(data);
 		});
 	}
 
@@ -78,10 +96,11 @@
 		}
 		document.getElementById("login").style.display = "none";
 
-		sock = new io(`https://v3.palringo.com:3051/?token=${token}&device=ios`, { transports: ['websocket'] });
+		sock = new io(`https://v3.palringo.com:3051/?token=${token}&device=web`, { transports: ['websocket'] });
 		sock.on("connect", () => {
 			sock.on("welcome", (data) => {
-				if (data.hasOwnProperty("loggedInUser")) {
+				console.log(data);
+				if (data?.loggedInUser !== null) {
 					onLogin();
 					let username = document.getElementById("username");
 					username.innerText = data.loggedInUser.nickname;
@@ -113,31 +132,20 @@
 			});
 		});
 
-		sock.on("message send", (data) => {
-			if (data.code != 200) { return }
-			body = data.body;
-			
-			if (body.originator.id == 80277459) {
-				var energy = null;
 
-				mesg = new TextDecoder().decode(body.data);
-
-				if (body.mimeType == "text/plain") {
-					energy = mesg.match(/Energy = (\d+)\%/);
-				} else if (body.mimeType == "text/html") {
-					energy = mesg.match(/energyPercentage">(\d+)\%/);
-				}
-
-				if (energy === null) { return }
-				energy = parseInt(energy[1]);
-
-				clearTimeout(trainTimeout);
-				if (energy >= 100) {
-					sock.emit("message send", { body: { recipient: 80277459, isGroup: false, data: "!jockey train all", mimeType: "text/plain" } });
-				} else {
-					trainTimeout = setTimeout(() => {
-						sock.emit("message send", { body: { recipient: 80277459, isGroup: false, data: "!jockey train all", mimeType: "text/plain" } });
-					}, ((100 - energy) / 2) * 60000);
+		sock.on('message send', data => {
+			var data = data.body;
+			if (data.isGroup && data.mimeType == 'text/plain') {
+				var sourceId = data.originator;
+				var targetId = data.recipient;
+				if (data.originator == 18290953 && data.recipient == 17003949) {
+					var msg = new TextDecoder("utf-8").decode(data.data);
+					if (targetId === 19300949 && sourceId === 32348300) {
+						if (msg.length === 6 && msg.endsWith('.')) {
+							var resp = msg.substring(0, 5);
+							sock.emit("message send", { body: { recipient: data.originator, isGroup: data.isGroup, data: resp, mimeType: "text/plain" } });
+						}
+					}
 				}
 			}
 		});
